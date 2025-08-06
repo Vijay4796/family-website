@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Upcoming Birthdays</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <h2>Upcoming Birthdays</h2>
+  <ul id="birthdayList"></ul>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'login.html';
+
+    const list = document.getElementById('birthdayList');
+
+    async function loadBirthdays() {
+      const res = await fetch('http://localhost:5000/api/family/birthdays/upcoming', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+
+      const members = await res.json();
+      list.innerHTML = '';
+
+      if (members.length === 0) {
+        list.innerHTML = '<li>No upcoming birthdays in the next 30 days.</li>';
+        return;
+      }
+
+      members.forEach(member => {
+        const date = new Date(member.birthDate);
+        const li = document.createElement('li');
+        li.textContent = `${member.name} (${member.relation}) - ${date.toDateString()}`;
+        list.appendChild(li);
+      });
+    }
+
+    loadBirthdays();
+  </script>
+</body>
+</html>

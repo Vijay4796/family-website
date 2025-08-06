@@ -1,0 +1,67 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Family Tree</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <h2>Welcome to Your Family Tree</h2>
+    <form id="addMemberForm">
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="text" id="relation" placeholder="Relation (e.g. Father, Daughter)">
+        <input type="text" id="parentId" placeholder="Parent ID (optional)">
+        <input type="date" id="birthDate" placeholder="Birth Date">
+        <button type="submit">Add Member</button>
+    </form>
+
+    <h3>Your Family Members</h3>
+    <ul id="familyList"></ul>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+
+        const loadFamily = async () => {
+            const res = await fetch('http://localhost:5000/api/family', {
+                headers: { Authorization: 'Bearer ' + token }
+            });
+            const data = await res.json();
+            const list = document.getElementById('familyList');
+            list.innerHTML = '';
+            data.forEach(member => {
+                const li = document.createElement('li');
+                let indent = member.parent ? '&nbsp;&nbsp;&nbsp;&nbsp;↳ ' : '';
+                li.innerHTML = `${indent}${member.name} <small>(${member.relation || 'N/A'})</small>`;
+                list.appendChild(li);
+            });
+        };
+
+        document.getElementById('addMemberForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const relation = document.getElementById('relation').value;
+            const parent = document.getElementById('parentId').value || null;
+            const birthDate = document.getElementById('birthDate').value;
+
+            const res = await fetch('http://localhost:5000/api/family/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: 'Bearer ' + token
+                },
+                body: JSON.stringify({ name, relation, parent, birthDate })
+            });
+
+            const data = await res.json();
+            alert(data.message);
+            loadFamily();
+        });
+
+        loadFamily();
+    </script>
+</body>
+
+</html>

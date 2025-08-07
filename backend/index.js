@@ -5,6 +5,7 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const MONGO_URI = process.env.MONGO_URI;
 
 // Middleware
 app.use(cors());
@@ -16,26 +17,17 @@ app.get('/', (req, res) => {
 });
 
 // MongoDB connection
-mongoose.connect(MONGO_URI)
-  .then(() => {
-    console.log('MongoDB connected');
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  })
-  .catch((error) => {
-    console.error('MongoDB connection failed:', error.message);
-  });
-
-
+mongoose.connect(MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
 .then(() => {
   console.log('✅ Connected to MongoDB');
-
-  // Start server only after DB is connected
   app.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}`);
   });
 })
-.catch((err) => {
-  console.error('❌ Failed to connect to MongoDB', err);
+.catch((error) => {
+  console.error('❌ MongoDB connection failed:', error.message);
 });
+
